@@ -1,27 +1,29 @@
-let tileURL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-let attribution = "© OpenStreetMap"
-var map = L.map('ISSmap').setView([0, 0], 2);
-L.tileLayer(tileURL, {attribution, maxZoomout : 2}).addTo(map)
-var ISS = L.icon({
-    iconUrl: './ISS.png',
-    iconSize: [62, 32],
+let ISSURL = 'https://api.wheretheiss.at/v1/satellites/25544'
+var myIcon = L.icon({
+    iconUrl: 'ISS.png',
+    iconSize: [53, 45],
 });
-let marker = L.marker([0,0], {icon : ISS}).addTo(map)
+var map = L.map('map', {
+    center: [0,0],
+    zoom: 1.6
+});
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+}).addTo(map);
 
-let firstTime = true;
-async function getISS(){
-    let response = await fetch('https://api.wheretheiss.at/v1/satellites/25544')
-    let data = await response.json()
-    let {latitude, longitude} = data;
-    marker.setLatLng([latitude, longitude])
-    if(firstTime){
-        map.setView([latitude, longitude], 1)
-        firstTime = false;
+let marker = L.marker([0, 0 ], {icon: myIcon}).addTo(map);
+let firsttime = true;
+const getISS =  async () => {
+    let response = await fetch(ISSURL);
+    let ISSData = await response.json()
+    document.getElementById('latitude').innerHTML =  ISSData.latitude;
+    document.getElementById('longitude').innerHTML =  ISSData.longitude;
+    marker.setLatLng([ISSData.latitude, ISSData.longitude])
+    if(firsttime){
+        map.setView([ISSData.latitude, ISSData.longitude], 1)
+        firsttime = false;
     }
-    document.getElementById('latitude').innerHTML = latitude +"°";
-    document.getElementById('longitude').innerHTML = longitude+"°"
 }
 getISS()
-
-setInterval(getISS, 1000)
-
+setInterval(getISS, 2000)
